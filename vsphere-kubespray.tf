@@ -418,17 +418,12 @@ resource "vsphere_folder" "folder" {
   datacenter_id = "${data.vsphere_datacenter.dc.id}"
 }
 
-# Create a resource pool for the Kubernetes VMs #
-resource "vsphere_resource_pool" "resource_pool" {
-  name                    = "${var.vsphere_resource_pool}"
-  parent_resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
-}
 
 # Create the Kubernetes master VMs #
 resource "vsphere_virtual_machine" "master" {
   count            = "${length(var.vm_master_ips)}"
   name             = "${var.vm_name_prefix}-master-${count.index}"
-  resource_pool_id = "${vsphere_resource_pool.resource_pool.id}"
+  resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
   datastore_id     = "${data.vsphere_datastore.datastore.id}"
   folder           = "${vsphere_folder.folder.path}"
 
@@ -488,7 +483,7 @@ resource "vsphere_compute_cluster_vm_anti_affinity_rule" "master_anti_affinity_r
 resource "vsphere_virtual_machine" "worker" {
   count            = "${length(var.vm_worker_ips)}"
   name             = "${var.vm_name_prefix}-worker-${count.index}"
-  resource_pool_id = "${vsphere_resource_pool.resource_pool.id}"
+  resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
   datastore_id     = "${data.vsphere_datastore.datastore.id}"
   folder           = "${vsphere_folder.folder.path}"
 
@@ -556,7 +551,7 @@ resource "vsphere_virtual_machine" "worker" {
 resource "vsphere_virtual_machine" "haproxy" {
   count            = "${length(var.vm_haproxy_ips)}"
   name             = "${var.vm_name_prefix}-haproxy-${count.index}"
-  resource_pool_id = "${vsphere_resource_pool.resource_pool.id}"
+  resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
   datastore_id     = "${data.vsphere_datastore.datastore.id}"
   folder           = "${vsphere_folder.folder.path}"
 
